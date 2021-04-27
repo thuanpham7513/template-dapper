@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DapperTemplate.Repository
@@ -23,39 +24,59 @@ namespace DapperTemplate.Repository
             int affectedRows;
             using (var conn = new SqlConnection(_appData.DefaultConnection))
             {
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@Name", user.Name);
+                parameters.Add("@Username", user.Username);
+                parameters.Add("@Password", user.Password);
+                parameters.Add("@Address", user.Address);
+                parameters.Add("@Age", user.Age);
+                parameters.Add("@CreatedDate", DateTime.UtcNow);
+                parameters.Add("@Email", user.Email);
+
+
                 conn.Open();
-                affectedRows = await conn.ExecuteAsync(
-                    "spCreateUser",
-                    new
-                    {
-                        Address = user.Address,
-                        Age = user.Age,
-                        CreatedDate = DateTime.UtcNow,
-                        Email = user.Email,
-                        Username = user.Username,
-                        Password = user.Password,
-                        Name = user.Name
-                    },
+                affectedRows = await conn
+                    .ExecuteAsync(
+                    sql: "spCreateUser", 
+                    param: parameters, 
                     commandType: CommandType.StoredProcedure);
             }
 
             return affectedRows > 0;
         }
 
-        public async Task<IEnumerable<User>> GetAll(int pageIndex, int pageSize)
+        public async Task<IEnumerable<User>> GetAll(
+            int? pageIndex = null, 
+            int? pageSize = null, 
+            string search = null,
+            bool? desc = null)
         {
             IEnumerable<User> result;
             using (var conn = new SqlConnection(_appData.DefaultConnection))
             {
+                var parameters = new DynamicParameters();
+                parameters.Add("@PageSize", pageSize);
+                parameters.Add("@PageIndex", pageIndex);
+                parameters.Add("@SearchText", search);
+                parameters.Add("@SearchColumn", "FullName");
+                parameters.Add("@SelectColumns", " Id, FullName, HomeAddress, Age, Md5Password "); 
+                if (desc.HasValue && desc.Value) 
+                {
+                    parameters.Add("@SortOrder", "DESC");
+                }
+                else if(desc.HasValue && !desc.Value)
+                {
+                    parameters.Add("@SortOrder", "ASC");
+                }
+               
                 conn.Open();
                 result = await conn.QueryAsync<User>(
                     "spGetUsers",
-                    new 
-                    { 
-                        MaxRow = pageIndex * pageSize, 
-                        MinRow = (pageSize - 1) * pageSize
-                    },
+                    parameters,
                     commandType: CommandType.StoredProcedure);
+
+
             }
 
             return result;

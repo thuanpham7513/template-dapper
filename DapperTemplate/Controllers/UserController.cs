@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DapperTemplate.Abstracts;
+using DapperTemplate.Abstracts.Services;
 using DapperTemplate.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -12,23 +13,23 @@ namespace DapperTemplate.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper; 
 
-        public UserController(IUserRepository userRepo, IMapper mapper)
+        public UserController(IUserService userService, IMapper mapper)
         {
-            _userRepository = userRepo;
+            _userService = userService;
             _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPage(int pageIndex, int pageSize)
+        public async Task<IActionResult> GetPage(int pageIndex, int pageSize, string searchValue)
         {
             if (pageIndex <= 0 || pageSize <= 0)
             {
                 return BadRequest();
             }
-            var records = await _userRepository.GetAll(pageIndex, pageSize);
+            var records = await _userService.GetAll(pageIndex, pageSize, desc: true, search: searchValue);
 
 
             return Ok(new UserPagingResponseModel 
@@ -47,7 +48,7 @@ namespace DapperTemplate.Controllers
                 return BadRequest();
             }
             var user = _mapper.Map<User>(requestModel);
-            if(!(await _userRepository.Create(user)))
+            if(!(await _userService.Create(user)))
             {
                 return StatusCode(500);
             }
@@ -55,7 +56,7 @@ namespace DapperTemplate.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody]UserRequestModel requestModel)
+        public async Task<IActionResult> Update([FromRoute]int id, [FromBody]UserRequestModel requestModel)
         {
             if (!ModelState.IsValid)
             {
@@ -64,7 +65,7 @@ namespace DapperTemplate.Controllers
             var user = _mapper.Map<User>(requestModel);
             user.Id = id;
 
-            if (!(await _userRepository.Update(user)))
+            if (!(await _userService.Update(user)))
             {
                 return StatusCode(500);
             }
@@ -80,7 +81,7 @@ namespace DapperTemplate.Controllers
                 return BadRequest();
             }
 
-            if (!(await _userRepository.Delete(id)))
+            if (!(await _userService.Delete(id)))
             {
                 return StatusCode(500);
             }

@@ -1,6 +1,8 @@
 using DapperTemplate.Abstracts;
+using DapperTemplate.Abstracts.Services;
 using DapperTemplate.Helper;
 using DapperTemplate.Repository;
+using DapperTemplate.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,7 +31,10 @@ namespace DapperTemplate
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserService, UserService>();
+
             services.AddAutoMapper(typeof(Startup));
             services.AddSwaggerGen();
             services.Configure<AppData>(Configuration.GetSection("AppData"));
