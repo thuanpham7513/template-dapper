@@ -28,8 +28,11 @@ BEGIN
 
 	SET @SqlCommand = CONCAT(@SqlCommand, ' ORDER BY Id ', @SortOrder)
 
-	IF(@PageSize >= 1 AND @PageIndex >= 1)
+	IF(@PageSize IS NOT NULL AND @PageSize >= 1 
+		AND @PageSize IS NOT NULL AND @PageIndex >= 1)
+	BEGIN
 	SET @SqlCommand = CONCAT(@SqlCommand, ' OFFSET ', (@PageIndex - 1) * @PageSize, ' ROWS ', 'FETCH NEXT ', @PageSize, ' ROWS ONLY');
+	END
 
 	EXEC (@SqlCommand)
 
