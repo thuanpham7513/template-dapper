@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
-using DapperTemplate.Abstracts.Services;
-using DapperTemplate.Models;
+using DapperTemplate.BuisinessLogic.Abstraction;
+using DapperTemplate.Models.Classes;
 using DapperTemplate.Models.QueryModels;
 using DapperTemplate.Models.QueryParameters;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,14 +13,14 @@ namespace DapperTemplate.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class ClassController : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IMapper _mapper; 
+        private readonly IClassService _classService;
+        private readonly IMapper _mapper;
 
-        public UserController(IUserService userService, IMapper mapper)
+        public ClassController(IClassService userService, IMapper mapper)
         {
-            _userService = userService;
+            _classService = userService;
             _mapper = mapper;
         }
 
@@ -30,14 +32,14 @@ namespace DapperTemplate.Controllers
                 return BadRequest();
             }
 
-            var records = await _userService.GetAll(
-                query.PageIndex, 
-                query.PageSize, 
-                desc: true, 
+            var records = await _classService.GetAll(
+                query.PageIndex,
+                query.PageSize,
+                desc: true,
                 search: query.SearchValue);
-            var result = new QueryResult<UserResponseModel>() 
+            var result = new QueryResult<ClassResponseModel>()
             {
-                PagingResult = new PagingResult<UserResponseModel>() 
+                PagingResult = new PagingResult<ClassResponseModel>()
                 {
                     PageIndex = query.PageIndex,
                     PageSize = query.PageSize,
@@ -47,16 +49,16 @@ namespace DapperTemplate.Controllers
             };
             return Ok(result);
         }
-            
+
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]UserRequestModel requestModel)
+        public async Task<IActionResult> Create([FromBody] ClassRequestModel requestModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var user = _mapper.Map<User>(requestModel);
-            if(!(await _userService.Create(user)))
+            var user = _mapper.Map<Class>(requestModel);
+            if (!(await _classService.Create(user)))
             {
                 return StatusCode(500);
             }
@@ -64,16 +66,16 @@ namespace DapperTemplate.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id, [FromBody]UserRequestModel requestModel)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] ClassRequestModel requestModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var user = _mapper.Map<User>(requestModel);
+            var user = _mapper.Map<Class>(requestModel);
             user.Id = id;
 
-            if (!(await _userService.Update(user)))
+            if (!(await _classService.Update(user)))
             {
                 return StatusCode(500);
             }
@@ -89,7 +91,7 @@ namespace DapperTemplate.Controllers
                 return BadRequest();
             }
 
-            if (!(await _userService.Delete(id)))
+            if (!(await _classService.Delete(id)))
             {
                 return StatusCode(500);
             }

@@ -1,5 +1,9 @@
 using DapperTemplate.Abstracts;
 using DapperTemplate.Abstracts.Services;
+using DapperTemplate.BuisinessLogic.Abstraction;
+using DapperTemplate.BuisinessLogic.Implementation;
+using DapperTemplate.DataAccess.Repository.Abstraction;
+using DapperTemplate.DataAccess.Repository.Implementations;
 using DapperTemplate.Helper;
 using DapperTemplate.Repository;
 using DapperTemplate.Services;
@@ -34,6 +38,9 @@ namespace DapperTemplate
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
+
+            services.AddScoped<IClassRepository, ClassRepository>();
+            services.AddScoped<IClassService, ClassService>();
 
             services.AddAutoMapper(typeof(Startup));
             services.AddSwaggerGen();

@@ -9,7 +9,7 @@ namespace DapperTemplate.Abstracts.Services
         Task<bool> Create(User user);
         Task<bool> Update(User user);
         Task<bool> Delete(int id);
-        Task<IEnumerable<User>> GetAll(int? pageIndex = null,
+        Task<IEnumerable<UserResponseModel>> GetAll(int? pageIndex = null,
             int? pageSize = null,
             string search = null,
             bool? desc = null);

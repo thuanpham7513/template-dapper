@@ -1,4 +1,5 @@
-﻿using DapperTemplate.Abstracts;
+﻿using AutoMapper;
+using DapperTemplate.Abstracts;
 using DapperTemplate.Abstracts.Services;
 using DapperTemplate.Models;
 using System.Collections.Generic;
@@ -9,9 +10,11 @@ namespace DapperTemplate.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
         public async Task<bool> Create(User user)
         {
@@ -23,9 +26,10 @@ namespace DapperTemplate.Services
             return await _userRepository.Delete(id);
         }
 
-        public async Task<IEnumerable<User>> GetAll(int? pageIndex = null, int? pageSize = null, string search = null, bool? desc = null)
+        public async Task<IEnumerable<UserResponseModel>> GetAll(int? pageIndex = null, int? pageSize = null, string search = null, bool? desc = null)
         {
-            return await _userRepository.GetAll(pageIndex, pageSize, search, desc);
+            var data =  await _userRepository.GetAll(pageIndex, pageSize, search, desc);
+            return _mapper.Map<IEnumerable<UserResponseModel>>(data);
         }
 
         public async Task<bool> Update(User user)

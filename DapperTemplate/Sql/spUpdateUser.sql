@@ -15,7 +15,7 @@ CREATE PROCEDURE [dbo].[spGetUsers]
 AS
 BEGIN
 	
-	SELECT @Total = COUNT(*) FROM orders;
+	SELECT @Total = COUNT(*) FROM dbo.Users;
 	
 	DECLARE @SqlCommand NVARCHAR(1000);
 	SET @SearchText = LTRIM(RTRIM(@SearchText))

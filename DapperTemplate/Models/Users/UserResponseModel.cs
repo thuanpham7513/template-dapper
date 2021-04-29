@@ -11,5 +11,6 @@ namespace DapperTemplate.Models
         public int Age { get; set; }
         public string Username { get; set; }
         public DateTime CreatedDate { get; set; }
+        public int Total { get; set; }
     }
 }

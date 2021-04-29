@@ -1,7 +1,7 @@
 ﻿using Dapper;
-using DapperTemplate.Abstracts;
+using DapperTemplate.DataAccess.Repository.Abstraction;
 using DapperTemplate.Helper;
-using DapperTemplate.Models;
+using DapperTemplate.Models.Classes;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -10,89 +10,84 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DapperTemplate.Repository
+namespace DapperTemplate.DataAccess.Repository.Implementations
 {
-    public class UserRepository : IUserRepository
+    public class ClassRepository : IClassRepository
     {
         private readonly AppData _appData;
-        public UserRepository(IOptions<AppData> options)
+        public ClassRepository(IOptions<AppData> options)
         {
             _appData = options.Value;
         }
-        public async Task<bool> Create(User user)
+        public async Task<bool> Create(Class cls)
         {
             int affectedRows;
             using (var conn = new SqlConnection(_appData.DefaultConnection))
             {
                 var parameters = new DynamicParameters();
 
-                parameters.Add("@Name", user.Name);
-                parameters.Add("@Username", user.Username);
-                parameters.Add("@Password", user.Password);
-                parameters.Add("@Address", user.Address);
-                parameters.Add("@Age", user.Age);
-                parameters.Add("@CreatedDate", DateTime.UtcNow);
-                parameters.Add("@Email", user.Email);        
+                parameters.Add("@Name", cls.Name);
+                parameters.Add("@Code", cls.Code);
 
                 conn.Open();
                 affectedRows = await conn
                     .ExecuteAsync(
-                    sql: "spCreateUser", 
-                    param: parameters, 
+                    sql: "spCreateClass",
+                    param: parameters,
                     commandType: CommandType.StoredProcedure);
 
-                var total = parameters.Get<int>("Total");
             }
 
             return affectedRows > 0;
         }
 
-        public async Task<IEnumerable<User>> GetAll(
-            int? pageIndex = null, 
-            int? pageSize = null, 
+        public async Task<IEnumerable<Class>> GetAll(
+            int? pageIndex = null,
+            int? pageSize = null,
             string search = null,
             bool? desc = null)
         {
-            IEnumerable<User> users;
+            IEnumerable<Class> users;
             using (var conn = new SqlConnection(_appData.DefaultConnection))
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@PageSize", pageSize);
                 parameters.Add("@PageIndex", pageIndex);
                 parameters.Add("@SearchText", search);
-                parameters.Add("@SearchColumn", "FullName");
-                parameters.Add("@SelectColumns", " Id, FullName, HomeAddress, Age, Md5Password ");
+                parameters.Add("@SearchColumn", "Name");
+                parameters.Add("@SelectColumns", " Id, Name, Code ");
                 parameters.Add("@Total", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                parameters.Add("@ResultCommand", dbType: DbType.String, direction: ParameterDirection.Output, size: 1000);
+                parameters.Add("@Command", dbType: DbType.String, direction: ParameterDirection.Output, size: 1000);
 
-                if (desc.HasValue && desc.Value) 
+                if (desc.HasValue && desc.Value)
                 {
                     parameters.Add("@SortOrder", "DESC");
                 }
-                else if(desc.HasValue && !desc.Value)
+                else if (desc.HasValue && !desc.Value)
                 {
                     parameters.Add("@SortOrder", "ASC");
                 }
 
                 conn.Open();
-                users = await conn.QueryAsync<User>("spGetUsers",
+                users = await conn.QueryAsync<Class>("spGetClass",
                     parameters,
                     commandType: CommandType.StoredProcedure);
 
-                if(users.Count() > 0)
+                if (users.Count() > 0)
                 {
                     users.First().Total = parameters.Get<int>("Total");
                 }
 
-                var command = parameters.Get<string>("ResultCommand");
+                var command = parameters.Get<string>("Command");
+
             }
 
             return users;
         }
 
-        public Task<User> GetById(int id)
+        public Task<Class> GetById(int id)
         {
-            throw new System.NotImplementedException();
+            throw new System.NotImplementedException();  
         }
 
         public async Task<bool> Delete(int id)
@@ -102,7 +97,7 @@ namespace DapperTemplate.Repository
             {
                 conn.Open();
                 affectedRows = await conn.ExecuteAsync(
-                    "spDeleleteUser",
+                    "spDeleleteClass",
                     id,
                     commandType: CommandType.StoredProcedure);
             }
@@ -110,24 +105,19 @@ namespace DapperTemplate.Repository
             return affectedRows > 0;
         }
 
-        public async Task<bool> Update(User user)
+        public async Task<bool> Update(Class cls)
         {
             int affectedRows;
             using (var conn = new SqlConnection(_appData.DefaultConnection))
             {
                 conn.Open();
                 affectedRows = await conn.ExecuteAsync(
-                    "spUpdateUser",
+                    "spUpdateClass",
                     new
                     {
-                        Id = user.Id,
-                        Address = user.Address,
-                        Age = user.Age,
-                        CreatedDate = DateTime.UtcNow,
-                        Email = user.Email,
-                        Username = user.Username,
-                        Password = user.Password,
-                        Name = user.Name
+                        Id = cls.Id,
+                        Name = cls.Name,
+                        Address = cls.Code,
                     },
                     commandType: CommandType.StoredProcedure);
             }
