@@ -9,16 +9,9 @@ using DapperTemplate.Repository;
 using DapperTemplate.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DapperTemplate
 {
@@ -36,6 +29,8 @@ namespace DapperTemplate
         {
             services.AddControllers();
 
+            services.AddSingleton<DbHelper>();
+
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
 
@@ -44,7 +39,11 @@ namespace DapperTemplate
 
             services.AddAutoMapper(typeof(Startup));
             services.AddSwaggerGen();
+
             services.Configure<AppData>(Configuration.GetSection("AppData"));
+
+            services.AddStackExchangeRedisCache(
+                options => options.Configuration = Configuration.GetConnectionString("RedisConnection"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

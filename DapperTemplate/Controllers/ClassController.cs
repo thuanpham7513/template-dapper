@@ -4,9 +4,12 @@ using DapperTemplate.Models.Classes;
 using DapperTemplate.Models.QueryModels;
 using DapperTemplate.Models.QueryParameters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DapperTemplate.Controllers
@@ -17,11 +20,13 @@ namespace DapperTemplate.Controllers
     {
         private readonly IClassService _classService;
         private readonly IMapper _mapper;
+        private readonly IDistributedCache _distributedCache;
 
-        public ClassController(IClassService userService, IMapper mapper)
+        public ClassController(IClassService userService, IMapper mapper, IDistributedCache distributedCache)
         {
             _classService = userService;
             _mapper = mapper;
+            _distributedCache = distributedCache;
         }
 
         [HttpGet]
@@ -32,11 +37,33 @@ namespace DapperTemplate.Controllers
                 return BadRequest();
             }
 
-            var records = await _classService.GetAll(
-                query.PageIndex,
-                query.PageSize,
-                desc: true,
-                search: query.SearchValue);
+            var cacheKey = "customerList";
+            string serializedClassList;
+            var records = new List<ClassResponseModel>();
+            var redisCustomerList = await _distributedCache.GetAsync(cacheKey);
+            if (redisCustomerList != null)
+            {
+                serializedClassList = Encoding.UTF8.GetString(redisCustomerList);
+                records = JsonConvert.DeserializeObject<List<ClassResponseModel>>(serializedClassList);
+            }
+            else
+            {
+                records = (await _classService.GetAll(
+                         query.PageIndex,
+                         query.PageSize,
+                         desc: true,
+                         search: query.SearchValue)).ToList();
+                serializedClassList = JsonConvert.SerializeObject(records);
+
+                redisCustomerList = Encoding.UTF8.GetBytes(serializedClassList);
+
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                await _distributedCache.SetAsync(cacheKey, redisCustomerList, options);
+            }
+           
             var result = new QueryResult<ClassResponseModel>()
             {
                 PagingResult = new PagingResult<ClassResponseModel>()

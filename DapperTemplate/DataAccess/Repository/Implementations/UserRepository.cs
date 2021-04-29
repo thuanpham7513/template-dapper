@@ -1,8 +1,9 @@
-﻿using Dapper;
+﻿
+using Dapper;
 using DapperTemplate.Abstracts;
 using DapperTemplate.Helper;
 using DapperTemplate.Models;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,15 +15,15 @@ namespace DapperTemplate.Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly AppData _appData;
-        public UserRepository(IOptions<AppData> options)
+        private readonly DbHelper _dbHelper;
+        public UserRepository(DbHelper dbHelper)
         {
-            _appData = options.Value;
+            _dbHelper = dbHelper;
         }
         public async Task<bool> Create(User user)
         {
             int affectedRows;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 var parameters = new DynamicParameters();
 
@@ -54,7 +55,7 @@ namespace DapperTemplate.Repository
             bool? desc = null)
         {
             IEnumerable<User> users;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@PageSize", pageSize);
@@ -98,7 +99,7 @@ namespace DapperTemplate.Repository
         public async Task<bool> Delete(int id)
         {
             int affectedRows;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 conn.Open();
                 affectedRows = await conn.ExecuteAsync(
@@ -113,7 +114,7 @@ namespace DapperTemplate.Repository
         public async Task<bool> Update(User user)
         {
             int affectedRows;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 conn.Open();
                 affectedRows = await conn.ExecuteAsync(

@@ -2,8 +2,6 @@
 using DapperTemplate.DataAccess.Repository.Abstraction;
 using DapperTemplate.Helper;
 using DapperTemplate.Models.Classes;
-using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -14,15 +12,16 @@ namespace DapperTemplate.DataAccess.Repository.Implementations
 {
     public class ClassRepository : IClassRepository
     {
-        private readonly AppData _appData;
-        public ClassRepository(IOptions<AppData> options)
+
+        private readonly DbHelper _dbHelper;
+        public ClassRepository(DbHelper dbHelper)
         {
-            _appData = options.Value;
+            _dbHelper = dbHelper;
         }
         public async Task<bool> Create(Class cls)
         {
             int affectedRows;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 var parameters = new DynamicParameters();
 
@@ -48,9 +47,10 @@ namespace DapperTemplate.DataAccess.Repository.Implementations
             bool? desc = null)
         {
             IEnumerable<Class> users;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 var parameters = new DynamicParameters();
+
                 parameters.Add("@PageSize", pageSize);
                 parameters.Add("@PageIndex", pageIndex);
                 parameters.Add("@SearchText", search);
@@ -93,7 +93,7 @@ namespace DapperTemplate.DataAccess.Repository.Implementations
         public async Task<bool> Delete(int id)
         {
             int affectedRows;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 conn.Open();
                 affectedRows = await conn.ExecuteAsync(
@@ -108,7 +108,7 @@ namespace DapperTemplate.DataAccess.Repository.Implementations
         public async Task<bool> Update(Class cls)
         {
             int affectedRows;
-            using (var conn = new SqlConnection(_appData.DefaultConnection))
+            using (var conn = new SqlConnection(_dbHelper.GetDatabaseConnection()))
             {
                 conn.Open();
                 affectedRows = await conn.ExecuteAsync(
