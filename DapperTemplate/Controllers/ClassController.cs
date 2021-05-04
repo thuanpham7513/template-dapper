@@ -51,8 +51,7 @@ namespace DapperTemplate.Controllers
                 records = (await _classService.GetAll(
                          query.PageIndex,
                          query.PageSize,
-                         desc: true,
-                         search: query.SearchValue)).ToList();
+                         desc: true)).ToList();
                 serializedClassList = JsonConvert.SerializeObject(records);
 
                 redisCustomerList = Encoding.UTF8.GetBytes(serializedClassList);

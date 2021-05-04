@@ -16,6 +16,6 @@ namespace DapperTemplate.Models
         public string Password { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedDate { get; set; }
-        public int Total { get; set; }
+        public int TotalCount { get; set; }
     }
 }

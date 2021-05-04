@@ -12,6 +12,11 @@ namespace DapperTemplate.Models.QueryParameters
         public int PageSize { get; set; }
         [Range(1, 1000)]
         public int PageIndex { get; set; }
-        public string SearchValue { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime? StartDate { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime? EndDate { get; set; }
     }
 }

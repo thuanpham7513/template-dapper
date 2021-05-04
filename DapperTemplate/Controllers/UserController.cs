@@ -31,10 +31,13 @@ namespace DapperTemplate.Controllers
             }
 
             var records = await _userService.GetAll(
-                query.PageIndex, 
-                query.PageSize, 
-                desc: true, 
-                search: query.SearchValue);
+                pageIndex: query.PageIndex,
+                pageSize: query.PageSize,
+                startDate: query.StartDate,
+                endDate: query.EndDate,
+                searchEmail: "string",
+                searchName: "string");
+
             var result = new QueryResult<UserResponseModel>() 
             {
                 PagingResult = new PagingResult<UserResponseModel>() 
@@ -42,9 +45,10 @@ namespace DapperTemplate.Controllers
                     PageIndex = query.PageIndex,
                     PageSize = query.PageSize,
                     Records = records,
-                    Total = records.First().Total
+                    Total = records.FirstOrDefault().TotalCount
                 }
             };
+
             return Ok(result);
         }
             

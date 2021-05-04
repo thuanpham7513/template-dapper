@@ -2,6 +2,7 @@
 using DapperTemplate.Abstracts;
 using DapperTemplate.Abstracts.Services;
 using DapperTemplate.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -26,9 +27,25 @@ namespace DapperTemplate.Services
             return await _userRepository.Delete(id);
         }
 
-        public async Task<IEnumerable<UserResponseModel>> GetAll(int? pageIndex = null, int? pageSize = null, string search = null, bool? desc = null)
+        public async Task<IEnumerable<UserResponseModel>> GetAll(
+            int? pageIndex = null,
+            int? pageSize = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string searchEmail = null,
+            string searchName = null,
+            string searchAddress = null,
+            bool? desc = null)
         {
-            var data =  await _userRepository.GetAll(pageIndex, pageSize, search, desc);
+            var data =  await _userRepository.GetAll(
+                pageIndex: pageIndex, 
+                pageSize: pageSize,
+                startDate: startDate,
+                endDate: endDate,
+                searchEmail: searchEmail, 
+                searchName: searchName, 
+                searchAddress: searchAddress, 
+                desc: desc);
             return _mapper.Map<IEnumerable<UserResponseModel>>(data);
         }
 

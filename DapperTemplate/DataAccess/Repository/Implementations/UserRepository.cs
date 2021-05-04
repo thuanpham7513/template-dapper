@@ -51,7 +51,11 @@ namespace DapperTemplate.Repository
         public async Task<IEnumerable<User>> GetAll(
             int? pageIndex = null, 
             int? pageSize = null, 
-            string search = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string searchEmail = null,
+            string searchName = null,
+            string searchAddress = null,
             bool? desc = null)
         {
             IEnumerable<User> users;
@@ -60,32 +64,17 @@ namespace DapperTemplate.Repository
                 var parameters = new DynamicParameters();
                 parameters.Add("@PageSize", pageSize);
                 parameters.Add("@PageIndex", pageIndex);
-                parameters.Add("@SearchText", search);
-                parameters.Add("@SearchColumn", "FullName");
-                parameters.Add("@SelectColumns", " Id, FullName, HomeAddress, Age, Md5Password ");
-                parameters.Add("@Total", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                parameters.Add("@ResultCommand", dbType: DbType.String, direction: ParameterDirection.Output, size: 1000);
+                parameters.Add("@DateTo", endDate);
+                parameters.Add("@DateFrom", startDate);
 
-                if (desc.HasValue && desc.Value) 
-                {
-                    parameters.Add("@SortOrder", "DESC");
-                }
-                else if(desc.HasValue && !desc.Value)
-                {
-                    parameters.Add("@SortOrder", "ASC");
-                }
+                parameters.Add("@SearchEmail", searchEmail);
+                parameters.Add("@SearchAddress", searchAddress);
+                parameters.Add("@searchName", searchName);
 
                 conn.Open();
                 users = await conn.QueryAsync<User>("spGetUsers",
                     parameters,
                     commandType: CommandType.StoredProcedure);
-
-                if(users.Count() > 0)
-                {
-                    users.First().Total = parameters.Get<int>("Total");
-                }
-
-                var command = parameters.Get<string>("ResultCommand");
             }
 
             return users;
